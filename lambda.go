@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	ec2session "github.com/burizz/whitelist-external-public-ip-aws/aws-session"
 	updatesecuritygroup "github.com/burizz/whitelist-external-public-ip-aws/aws-sg"
@@ -33,17 +34,19 @@ func init() {
 	}
 }
 
-// func main() {
-// 	lambda.Start(LambdaHandler)
-// }
-
-// func LambdaHandler() {}
 func main() {
+	lambda.Start(LambdaHandler)
+}
+
+// LambdaHandler - entrypoint
+func LambdaHandler() (msg string, err error) {
 	var ipAddrList []string
+	var errMsg string = "Error"
+
 	// Get domain IP ranges
 	if len(domainNames) == 0 || len(securityGroupIDs) == 0 || awsRegion == "" {
-		// TODO: return
-		fmt.Println("Err: environment variable empty")
+		// fmt.Println("Err: Need to set all environment variables - domainNames, securityGroupIDs, awsRegion")
+		return errMsg, fmt.Errorf("Err: Missing Env Var; need to set all environment variables - domainNames, securityGroupIDs, awsRegion")
 	}
 
 	for _, domain := range domainNames {
@@ -51,8 +54,8 @@ func main() {
 		for count := 0; count <= 10; count++ {
 			ipList, err := net.LookupHost(domain)
 			if err != nil {
-				// TODO: return
-				fmt.Println("LookupHost error: %w", err)
+				// fmt.Println("LookupHost Err: ", err)
+				return errMsg, fmt.Errorf("LookupHost Err: %v", err)
 			}
 
 			for _, ip := range ipList {
@@ -66,10 +69,13 @@ func main() {
 		for _, ipAddr := range ipAddrList {
 			ipAddr = ipAddr + "/32"
 			if err := updatesecuritygroup.Egress(ec2SvcClient, ipAddr, securityGroup); err != nil {
-				fmt.Println("updateEgressErr : %w", err)
+				// fmt.Println("updateEgressErr: ", err)
+				return errMsg, fmt.Errorf("updateEgressErr: %v", err)
 			}
 		}
 	}
+	fmt.Println("Lambda exeuction completed successfully")
+	return fmt.Sprintf("Success"), nil
 }
 
 // Check if IP is in list, skip if it is

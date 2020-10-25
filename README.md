@@ -1,6 +1,33 @@
 # whitelist-external-public-ip-aws
 AWS Lambda for whitelisting the public IP Ranges of any external domain in AWS Security Group Outbound rules.
 
+## Build Lambda
+
+Build on Linux : 
+```
+# Get dependency
+go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
+```
+
+```
+# Compile and zip
+GOOS=linux go build lambda.go && zip go_lambda.zip lambda
+```
+
+Build on Windows : 
+```
+# Get dependency
+go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
+```
+
+```
+# Compile and zip
+$env:GOOS = "linux"
+$env:CGO_ENABLED = "0"
+$env:GOARCH = "amd64"
+go build -o lambda lambda.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zip lambda
+```
+
 #### Vars
 
 Lambda Env Vars :
@@ -26,4 +53,22 @@ export awsRegion = "eu-central-1"
 $env:domainNames = "hub.docker.com,helm.nginx.com"
 $env:securityGroupIDs = "sg-00ffabccebd5efda2,sg-041c5e7daf95e16a3"
 $env:awsRegion = "eu-central-1"
+```
+
+#### IAM Permissions
+Created standard Lambda execution role and add ec2:AuthorizeSecurityGroupEgress write permissions.
+
+Example policy for "AuthorizeSecurityGroupEgress" access : 
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "ec2:AuthorizeSecurityGroupEgress",
+            "Resource": "arn:aws:ec2:*:722377226063:security-group/*"
+        }
+    ]
+}
 ```

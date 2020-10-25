@@ -11,6 +11,10 @@ import (
 
 // Initialize returns an EC2 svc client with AWS session - default credentials and region (set in ENV vars)
 func Initialize(awsRegion string) (*ec2.EC2, error) {
+	if isNotValid(awsRegion, ValidRegions) {
+		return nil, fmt.Errorf("Invalid AWS Region %v", awsRegion)
+	}
+
 	// Create AWS session with default credentials and region (in ENV vars)
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion)},
@@ -22,4 +26,13 @@ func Initialize(awsRegion string) (*ec2.EC2, error) {
 	// Create an AWS EC2 service client
 	svc := ec2.New(sess)
 	return svc, nil
+}
+
+func isNotValid(awsRegion string, validRegions []string) bool {
+	for _, validRegion := range validRegions {
+		if validRegion == awsRegion {
+			return false
+		}
+	}
+	return true
 }
