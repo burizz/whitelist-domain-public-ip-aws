@@ -52,27 +52,25 @@ Example policy for "AuthorizeSecurityGroupEgress" access :
         {
             "Sid": "VisualEditor0",
             "Effect": "Allow",
-            "Action": [
-                "ec2:AuthorizeSecurityGroupEgress",
-                "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:RevokeSecurityGroupEgress",
-                "ec2:RevokeSecurityGroupIngress"
-            ],
-            "Resource": "arn:aws:ec2:*:<REPLACE_THIS_WITH_YOUR_ACCOUNT_ID>:security-group/*"
-        },
-        {
-            "Action": [
-                "ec2:DescribeSecurityGroups",
-                "ec2:DescribeSecurityGroupReferences",
-                "ec2:DescribeStaleSecurityGroups",
-                "ec2:DescribeVpcs"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
+            "Action": "ec2:AuthorizeSecurityGroupEgress",
+            "Resource": "arn:aws:ec2:*:722377226063:security-group/*"
         }
     ]
 }
 ```
+
+**Lambda trigger**
+EventBridge time-based trigger example - scheduled expressions
+
+Add Trigger > EventBridge > Create Rule > whitelist-external-ip-lambda > Scheduled expression
+```
+# Run every hour
+cron(0 * * * ? *)
+
+# Run every 30 min
+cron(0/30 * * * ? *)
+```
+
 
 **Local test vars**
 ```
