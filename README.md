@@ -3,7 +3,7 @@ AWS Lambda for whitelisting the public IP Ranges of any external domain in AWS S
 
 ## Build Lambda
 
-**Build on Linux**
+**Linux**
 ```
 # Get dependency
 go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
@@ -11,10 +11,10 @@ go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
 
 ```
 # Compile and zip
-GOOS=linux go build main.go && zip go_lambda.zip main
+GOOS=linux go build lambda.go && zip go_lambda.zip lambda
 ```
 
-**Build on Windows**
+**Windows**
 ```
 # Get dependency
 go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
@@ -25,15 +25,54 @@ go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
 $env:GOOS = "linux"
 $env:CGO_ENABLED = "0"
 $env:GOARCH = "amd64"
-go build -o main main.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zip main
+go build -o lambda lambda.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zip lambda
 ```
 
-**Lambda Env Vars**
+### Lambda Settings
+
+**Environment variables**
 |  Key | Value  | Description |
 |---   |---     |---          |
 | awsRegion  | eu-central-1 | AWS Region |
-| securityGroupIDs  | sg-041c5e7daf95e16a3,sg-041c5e7daf95e16a3 | Comma separated list of Security groups (no spaces) |
+| securityGroupIDs  | sg-00ffabccebd5efda2,sg-041c5e7daf95e16a3 | Comma separated list of Security groups (no spaces) |
 | domainNames  |  hub.docker.com,helm.nginx.com | Comma separated list of Domain Names (no spaces) |
+
+**Change Handler entrypoint**
+Change Handler from the default "hello" to "lambda"
+
+**Lambda Execution role**
+
+Create standard Lambda execution role and add ec2:AuthorizeSecurityGroupEgress write permissions to it.
+
+Example policy for "AuthorizeSecurityGroupEgress" access : 
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AuthorizeSecurityGroupEgress",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:RevokeSecurityGroupEgress",
+                "ec2:RevokeSecurityGroupIngress"
+            ],
+            "Resource": "arn:aws:ec2:*:<REPLACE_THIS_WITH_YOUR_ACCOUNT_ID>:security-group/*"
+        },
+        {
+            "Action": [
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSecurityGroupReferences",
+                "ec2:DescribeStaleSecurityGroups",
+                "ec2:DescribeVpcs"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}
+```
 
 **Local test vars**
 ```
@@ -53,20 +92,28 @@ $env:securityGroupIDs = "sg-00ffabccebd5efda2,sg-041c5e7daf95e16a3"
 $env:awsRegion = "eu-central-1"
 ```
 
-#### IAM Permissions
-Created standard Lambda execution role and add ec2:AuthorizeSecurityGroupEgress write permissions.
-
-Example policy for "AuthorizeSecurityGroupEgress" access : 
+#### Errors : 
+You haven't changed Handler entrypoint in Lambda settings:
 ```
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": "ec2:AuthorizeSecurityGroupEgress",
-            "Resource": "arn:aws:ec2:*:722377226063:security-group/*"
-        }
-    ]
+  "errorMessage": "fork/exec /var/task/hello: no such file or directory",
+  "errorType": "PathError"
 }
 ```
+
+Missing IAM permissions to change security group egress:
+```
+{
+  "errorMessage": "updateEgressErr: awsUpdateSg: UnauthorizedOperation: You are not authorized to perform this operation. Encoded authorization failure message: ...\n\tstatus code: 403, request id: 2795cff9-f02f-498b-ac23-616be92e2676",
+  "errorType": "errorString"
+}
+```
+
+Maximum amount of rules per security group exceeed: 
+```
+{
+  "errorMessage": "updateEgressErr: awsUpdateSg: RulesPerSecurityGroupLimitExceeded: The maximum number of rules per security group has been reached.\n\tstatus code: 400, request id: ed01a938-5270-49bc-b6dd-2712ce224383",
+  "errorType": "errorString"
+}
+```
+AWS has a limit of 60 inbound/outbound rules per Security Group - https://docs.amazonaws.cn/en_us/vpc/latest/userguide/amazon-vpc-limits.html (you can request AWS to increase this limit)

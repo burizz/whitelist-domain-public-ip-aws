@@ -32,6 +32,8 @@ func Egress(ec2ClientSvc *ec2.EC2, ipForWhitelist string, securityGroup string) 
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
+			case "InvalidPermission.Duplicate":
+				fmt.Println("IP Already added in Egress rules")
 			default:
 				return fmt.Errorf("awsUpdateSg: %v", aerr)
 			}
