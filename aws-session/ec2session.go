@@ -1,5 +1,5 @@
-// Package session initializes an AWS session and returns an ec2 service client with that session
-package session
+// Package ec2session initializes an AWS session and returns an ec2 service client with that session
+package ec2session
 
 import (
 	"fmt"

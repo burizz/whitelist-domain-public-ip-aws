@@ -1,15 +1,9 @@
-package session
+package ec2session
 
 import (
 	"fmt"
 	"testing"
-
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 )
-
-type mockEC2Client struct {
-	ec2iface.EC2API
-}
 
 func TestInitialize(t *testing.T) {
 	var tests = []struct {
