@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	ec2session "github.com/burizz/whitelist-external-public-ip-aws/aws-session"
@@ -11,15 +13,14 @@ import (
 
 var awsRegion string
 var securityGroupIDs []string
-var domainName string
+var domainNames []string
 var ec2SvcClient *ec2.EC2
 
 // Init Vars
 func init() {
-	//TODO: Add Env vars
-	domainName = "hub.docker.com"
-	securityGroupIDs = []string{"sg-00ffabccebd5efda2"}
-	awsRegion = "eu-central-1"
+	domainNames = strings.Split(os.Getenv("domainNames"), ",")
+	securityGroupIDs = strings.Split(os.Getenv("securityGroupIDs"), ",")
+	awsRegion = os.Getenv("awsRegion")
 }
 
 // Init Sessions
@@ -32,30 +33,38 @@ func init() {
 	}
 }
 
+// func main() {
+// 	lambda.Start(LambdaHandler)
+// }
+
+// func LambdaHandler() {}
 func main() {
-	// Get domains IP ranges
-	ipAddrList, err := net.LookupHost(domainName)
-	if err != nil {
-		fmt.Println("LookupHost error: %w", err)
+	var ipAddrList []string
+	// Get domain IP ranges
+	if len(domainNames) == 0 || len(securityGroupIDs) == 0 || awsRegion == "" {
+		// TODO: return
+		fmt.Println("Err: environment variable empty")
 	}
 
-	// Check a few times in case IPs change
-	for count := 0; count <= 10; count++ {
-		ipList, err := net.LookupHost(domainName)
-		if err != nil {
-			fmt.Println("LookupHost error: %w", err)
-		}
+	for _, domain := range domainNames {
+		// Check a few times in case IPs change
+		for count := 0; count <= 10; count++ {
+			ipList, err := net.LookupHost(domain)
+			if err != nil {
+				// TODO: return
+				fmt.Println("LookupHost error: %w", err)
+			}
 
-		for _, ip := range ipList {
-			ipAddrList = appendIfMissing(ipAddrList, ip)
+			for _, ip := range ipList {
+				ipAddrList = appendIfMissing(ipAddrList, ip)
+			}
 		}
 	}
-
-	fmt.Println(ipAddrList)
 
 	// Whitelist IP ranges in SG Egress Rules - port 443
 	for _, securityGroup := range securityGroupIDs {
 		for _, ipAddr := range ipAddrList {
+			ipAddr = ipAddr + "/32"
 			if err := updatesecuritygroup.Egress(ec2SvcClient, ipAddr, securityGroup); err != nil {
 				fmt.Println("updateEgressErr : %w", err)
 			}

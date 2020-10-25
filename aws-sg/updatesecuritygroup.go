@@ -40,7 +40,7 @@ func Egress(ec2ClientSvc *ec2.EC2, ipForWhitelist string, securityGroup string) 
 			fmt.Println(err.Error())
 		}
 	} else {
-		fmt.Println("IP Range added successfully")
+		fmt.Printf("IP Range [%v] added successfully\n", ipForWhitelist)
 	}
 	return nil
 }
