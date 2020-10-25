@@ -3,7 +3,7 @@ AWS Lambda for whitelisting the public IP Ranges of any external domain in AWS S
 
 ## Build Lambda
 
-Build on Linux : 
+**Build on Linux**
 ```
 # Get dependency
 go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
@@ -11,10 +11,10 @@ go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
 
 ```
 # Compile and zip
-GOOS=linux go build lambda.go && zip go_lambda.zip lambda
+GOOS=linux go build main.go && zip go_lambda.zip main
 ```
 
-Build on Windows : 
+**Build on Windows**
 ```
 # Get dependency
 go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
@@ -25,12 +25,10 @@ go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip
 $env:GOOS = "linux"
 $env:CGO_ENABLED = "0"
 $env:GOARCH = "amd64"
-go build -o lambda lambda.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zip lambda
+go build -o main main.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zip main
 ```
 
-#### Vars
-
-Lambda Env Vars :
+**Lambda Env Vars**
 |  Key | Value  | Description |
 |---   |---     |---          |
 | awsRegion  | eu-central-1 | AWS Region |
