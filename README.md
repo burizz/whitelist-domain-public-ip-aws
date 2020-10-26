@@ -1,4 +1,4 @@
-# whitelist-external-public-ip-aws
+# whitelist-domain-public-ip-aws
 AWS Lambda for whitelisting the public IP Ranges of any external domain in AWS Security Group Outbound rules.
 
 ## Build Lambda
