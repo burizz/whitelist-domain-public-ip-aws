@@ -38,6 +38,7 @@ go build -o lambda lambda.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zi
 | domainNames  |  hub.docker.com,helm.nginx.com | Comma separated list of Domain Names (no spaces) |
 
 **Change Handler entrypoint**
+
 Change Handler from the default "hello" to "lambda"
 
 **Lambda Execution role**
