@@ -1,7 +1,9 @@
 # whitelist-domain-public-ip-aws
 AWS Lambda for whitelisting the public IP Ranges of any external domain in AWS Security Group Outbound rules.
 
-## Build Lambda
+## Build Lambda binary
+
+Manually : 
 
 **Linux**
 ```
@@ -26,6 +28,14 @@ $env:GOOS = "linux"
 $env:CGO_ENABLED = "0"
 $env:GOARCH = "amd64"
 go build -o lambda lambda.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zip lambda
+```
+
+Using Make : 
+
+```
+make run
+make build
+make compile
 ```
 
 ### Lambda Settings
