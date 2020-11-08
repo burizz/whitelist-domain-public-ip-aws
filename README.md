@@ -33,9 +33,20 @@ go build -o lambda lambda.go; ~\Go\Bin\build-lambda-zip.exe -output go_lambda.zi
 Using Make : 
 
 ```
-make run
-make build
-make compile
+$ make run
+go run main.go
+Hello
+
+$ make build                                      
+go build -o bin/lambda lambda.go
+
+$ make compile
+echo "Compiling for every OS and Platform"
+Compiling for every OS and Platform
+# Linux
+GOOS=linux GOARCH=amd64 go build -o bin/lambda-linux-amd64 lambda.go
+# Windows binary
+GOOS=windows GOARCH=amd64 go build -o bin/lambda-windows-amd64 lambda.go
 ```
 
 ### Lambda Settings
